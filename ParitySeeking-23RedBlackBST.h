@@ -208,12 +208,13 @@ private:
 			// Parity-seeking Rule (b): Make the sibling red
 			y->color = RED;
 			x = p;
-			x = fixUp(x, y);
+			x = fixUp(x);
 		}
 		return x;
 	}
 
-	Node* fixUp(Node* x, Node* z) {
+	Node* fixUp(Node* x) {
+		Node* z = x->left->color == RED ? x->left : x->right;
 		if (z->left->color == RED || z->right->color == RED) {			
 			if (z == x->right) {
 				if (z->right->color == BLACK) 	// Fixing rule (a)
