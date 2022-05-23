@@ -26,29 +26,29 @@ private:
 		enum COLOR color;				// color of parent link
 
 	public:
-		// This constructor is used only for nil
+		// This constructor is used only for nilSentinel
 		Node() {
 			this->color = BLACK;
 			left = right = parent = this;
 		}
 
-		Node(Key key, Value value, Node* parent, Node* nil) {
+		Node(Key key, Value value, Node* parent, Node* nilSentinel) {
 			this->key = key;
 			this->value = value;
 			this->parent = parent;
 			this->color = RED;
-			left = right = nil;
+			left = right = nilSentinel;
 		}
 	};
 
 public:
 	ClassicalRedBlackBST() {
-		nil = new Node();
-		//root = nil->left;
+		nilSentinel = new Node();
+		//root = nilSentinel->left;
 	}
 
 	virtual Value get(Key key) {
-		Node*	root = nil->left;
+		Node*	root = nilSentinel->left;
 		return get(root, key);
 	}
 
@@ -56,12 +56,12 @@ public:
 		Node* h;
 		h = put_top_down_pass(key, value);
 		put_bottom_up_pass(h); // fixup pass
-		Node*	root = nil->left;
+		Node*	root = nilSentinel->left;
 		root->color = BLACK;
 	}
 
 	virtual void remove(Key key) {
-		nil->key = key;
+		nilSentinel->key = key;
 		Node* x; // Parent of deficient node
 		x = remove_top_down_pass(key);
 		if (x)
@@ -69,22 +69,22 @@ public:
 	}
 
 	virtual int size() {
-		return recSize(nil->left);
+		return recSize(nilSentinel->left);
 	}
 
 	int recSize(Node* h) {
-		if (h == nil)
+		if (h == nilSentinel)
 			return 0;
 		else
 			return 1 + recSize(h->left) + recSize(h->right);
 	}
 
 private:
-	Node*	nil;
+	Node*	nilSentinel;
 
 private:
 	inline Value get(Node* x, Key key) {
-		//if (x == nil)
+		//if (x == nilSentinel)
 		//	throw "Not found";
 		if (key == x->key) return x->value;
 		if (key < x->key) return get(x->left, key);
@@ -92,11 +92,11 @@ private:
 	}
 
 	Node* put_top_down_pass(Key key, Value value) {
-		Node** p = &nil->left;	//root is nil->left
-		Node* h = nil;
+		Node** p = &nilSentinel->left;	//root is nilSentinel->left
+		Node* h = nilSentinel;
 		while (1){
-			if (*p == nil) {
-				*p = new Node(key, value, h, nil);
+			if (*p == nilSentinel) {
+				*p = new Node(key, value, h, nilSentinel);
 				break;
 			}
 			else {
@@ -162,7 +162,7 @@ private:
 
 	Node* remove_top_down_pass(Key key) {
 		Node* deg2Node = NULL;
-		Node*  h = nil->left;
+		Node*  h = nilSentinel->left;
 
 		while (1) {
 			if (key > h->key) {
@@ -201,7 +201,7 @@ private:
 
 	void remove_bottom_up_pass(Node* x) {
 
-		while (x != nil->left && x->color == BLACK) {
+		while (x != nilSentinel->left && x->color == BLACK) {
 			if (x == x->parent->left)
 				x = leftRemoveFixup(x);
 			else 
@@ -229,7 +229,7 @@ private:
 			}
 			w->right->color = BLACK;  //Rule (d)
 			rotateLeft(p);
-			x = nil->left;
+			x = nilSentinel->left;
 		}
 		return x;
 	}
@@ -252,7 +252,7 @@ private:
 			}
 			w->left->color = BLACK; //Rule (d)
 			rotateRight(p);
-			x = nil->left;
+			x = nilSentinel->left;
 		}
 		return x;
 	}
@@ -262,10 +262,10 @@ private:
 		Node **p = h == h->parent->left ? &h->parent->left : &h->parent->right;
 		if (isNil(h->left)) {
 			if (isNil(h->right)) {
-				nil->parent = h->parent;
+				nilSentinel->parent = h->parent;
 				fixed = h->color == RED;
 				delete h;
-				h = nil;
+				h = nilSentinel;
 			}
 			else {
 				fixed = true;
@@ -276,7 +276,7 @@ private:
 				h->color = BLACK;
 			}
 		}
-		else { // h->right == nil
+		else { // h->right == nilSentinel
 			fixed = true;
 			Node* tmp = h->left;
 			tmp->parent = h->parent;
@@ -298,7 +298,7 @@ private:
 	}
 
 	inline bool isNil(Node* x) {
-		return x == nil;
+		return x == nilSentinel;
 	}
 
 	inline void colorFlip(Node* h) {

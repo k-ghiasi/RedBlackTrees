@@ -26,28 +26,28 @@ private:
         bool color;            // color of parent link
 
     public:
-		// This constructor is used only for nil
+		// This constructor is used only for nilSentinel
 		Node() {
 			this->color = BLACK;
 			left = right = this;
 		}
 
-        Node(Key key, Value value, Node* nil) {
+        Node(Key key, Value value, Node* nilSentinel) {
             this->key = key;
             this->value = value;
             this->color = RED;
-            left = right = nil;
+            left = right = nilSentinel;
         }
     };
 
-	Node *nil;
+	Node *nilSentinel;
     Node *root;            // root of the BST
 
 public:
 	LeftLeaningRedBlackBST()
 	{
-		nil = new Node();
-		root = nil;
+		nilSentinel = new Node();
+		root = nilSentinel;
 	}
 
 public:
@@ -57,7 +57,7 @@ public:
 
 public:
     inline bool contains(Key key) {
-        return (get(key) != nil);
+        return (get(key) != nilSentinel);
     }
 
 public:
@@ -70,7 +70,7 @@ public:
 	}
 
 	int recSize(Node* h) {
-		if (h == nil)
+		if (h == nilSentinel)
 			return 0;
 		else
 			return 1 + recSize(h->left) + recSize(h->right);
@@ -79,7 +79,7 @@ public:
 
 private:
     inline Value get(Node *x, Key key) {
-		//if (x == nil)
+		//if (x == nilSentinel)
 		//	throw "Not found";
         if (key== x->key) return x->value;
         if (key < x->key) return get(x->left, key);
@@ -88,26 +88,26 @@ private:
 
 public:
     inline Value min() {
-        if (root == nil) return nil;
+        if (root == nilSentinel) return nilSentinel;
         else return min(root);
     }
 
 
 private:
     inline Value min(Node *x) {
-        if (x->left == nil) return x->value;
+        if (x->left == nilSentinel) return x->value;
         else return min(x->left);
     }
 
 public:
     inline Value max() {
-        if (root == nil) return nil;
+        if (root == nilSentinel) return nilSentinel;
         else return max(root);
     }
 
 private:
     inline Value max(Node *x) {
-        if (x->right == nil) return x->value;
+        if (x->right == nilSentinel) return x->value;
         else return max(x->right);
     }
 
@@ -119,8 +119,8 @@ public:
 
 private:
     inline Node *put(Node *h, Key key, Value value) {
-        if (h == nil)
-            return new Node(key, value, nil);
+        if (h == nilSentinel)
+            return new Node(key, value, nilSentinel);
 
         if (key == h->key)
             h->value = value;
@@ -145,26 +145,26 @@ private:
 public:
     void remove(Key key) {
         root = remove(root, key);
-        if (root != nil) {
+        if (root != nilSentinel) {
             root->color = BLACK;
         }
     }
 
 private:
     Node *remove(Node *h, Key key) {
-        if (h != nil) {
+        if (h != nilSentinel) {
             if (key < h->key) {
-                if (!isRed(h->left) && h->left != nil && !isRed(h->left->left))
+                if (!isRed(h->left) && h->left != nilSentinel && !isRed(h->left->left))
                     h = moveRedLeft(h);
                 h->left = remove(h->left, key);
             } else {
                 if (isRed(h->left))
                     h = rotateRight(h);
-                if ((key == h->key) && (h->right == nil)) {
+                if ((key == h->key) && (h->right == nilSentinel)) {
                     delete h;
-                    return nil;
+                    return nilSentinel;
                 }
-                if (!isRed(h->right) && h->right != nil && !isRed(h->right->left))
+                if (!isRed(h->right) && h->right != nilSentinel && !isRed(h->right->left))
                     h = moveRedRight(h);
                 if (key == h->key) {
                     h->value = get(h->right, min(h->right));
@@ -175,21 +175,21 @@ private:
 
             return fixUp(h);
         }
-        return nil;
+        return nilSentinel;
     }
 
 public:
     void deleteMin() {
         root = deleteMin(root);
-        if (root != nil)
+        if (root != nilSentinel)
             root->color = BLACK;
     }
 
 private:
     Node *deleteMin(Node *h) {
-        if (h->left == nil) {
+        if (h->left == nilSentinel) {
             delete h;
-            return nil;
+            return nilSentinel;
         }
         if (!isRed(h->left) && !isRed(h->left->left))
             h = moveRedLeft(h);
@@ -203,7 +203,7 @@ public:
     void deleteMax() {
         root = deleteMax(root);
 
-        if (root != nil)
+        if (root != nilSentinel)
             root->color = BLACK;
     }
 
@@ -212,9 +212,9 @@ private:
         if (isRed(h->left))
             h = rotateRight(h);
 
-        if (h->right == nil) {
+        if (h->right == nilSentinel) {
             delete h;
-            return nil;
+            return nilSentinel;
         }
 
         if (!isRed(h->right) && !isRed(h->right->left))
@@ -261,7 +261,7 @@ private:
 		// Assuming that h is red and both h.left and h.left.left
         // are black, make h.left or one of its children red.
         colorFlip(h);
-        if (h->right != nil && isRed(h->right->left)) {
+        if (h->right != nilSentinel && isRed(h->right->left)) {
             h->right = rotateRight(h->right);
             h = rotateLeft(h);
             colorFlip(h);
@@ -274,7 +274,7 @@ private:
         // are black, make h.right or one of its children red.
         colorFlip(h);
 
-        if (h->left != nil && isRed(h->left->left)) {
+        if (h->left != nilSentinel && isRed(h->left->left)) {
             h = rotateRight(h);
             colorFlip(h);
         }
