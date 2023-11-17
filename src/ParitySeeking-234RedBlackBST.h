@@ -54,8 +54,6 @@ public:
 		Node* h;
 		h = put_top_down_pass(key, value);
 		put_bottom_up_pass(h); // fixup pass
-		Node*	root = nilSentinel->left;
-		root->color = BLACK;
 	}
 
 	virtual void remove(Key key) {
@@ -84,6 +82,7 @@ private:
 	inline Value get(Node* x, Key key) {
 		//if (x == nilSentinel)
 		//	throw "Not found";
+		this->incTopDownVisit();
 		if (key == x->key) return x->value;
 		if (key < x->key) return get(x->left, key);
 		else return get(x->right, key);
@@ -93,6 +92,7 @@ private:
 		Node** p = &nilSentinel->left;	//root is nilSentinel->left
 		Node* h = nilSentinel;
 		while (1) {
+			this->incTopDownVisit();
 			if (*p == nilSentinel) {
 				*p = new Node(key, value, h, nilSentinel);
 				break;
@@ -120,38 +120,41 @@ private:
 	This method is taken from CLRS RB Trees
 	*/
 	void put_bottom_up_pass(Node* x) {
-		Node* y;   // sibling of parent of x
-		while (x->parent->color == RED) {
-			if (x->parent == x->parent->parent->left) {
-				y = x->parent->parent->right;
-				if (y->color == RED) {
-					colorFlip(x->parent->parent);
-					x = x->parent->parent;
+		Node *p, *g;
+		while (x->parent->color == RED) {			// x->color is certainly RED
+			this->incBottomUpVisit();
+			p = x->parent;
+			g = p->parent;
+			if (p == g->left) {
+				if (g->right->color == RED) {		// Rule (a)
+					colorFlip(g);
+					x = g;
 				}
 				else {
-					if (x == x->parent->right) {
-						x = x->parent;
-						rotateLeft(x);
+					if (x == p->right) {			// Rule (b)
+						x = p;
+						rotateLeft(p);
 					}
-					rotateRight(x->parent->parent);
+					rotateRight(g);					// Rule (c)
 				}
 			}
 			else
 			{
-				y = x->parent->parent->left;
-				if (y->color == RED) {
-					colorFlip(x->parent->parent);
-					x = x->parent->parent;
+				if (g->left->color == RED) {		// Rule (a)
+					colorFlip(g);
+					x = g;
 				}
 				else {
-					if (x == x->parent->left) {
-						x = x->parent;
-						rotateRight(x);
+					if (x == p->left) {				// Rule (b)
+						x = p;
+						rotateRight(p);
 					}
-					rotateLeft(x->parent->parent);
+					rotateLeft(g);					// Rule (c)
 				}
 			}
 		}
+		if (x == nilSentinel->left)					// x->color is certainly RED
+			x->color = BLACK;						// Rule (d)
 	}
 
 private:
@@ -161,6 +164,7 @@ private:
 		Node* h = nilSentinel->left;
 
 		while (1) {
+			this->incTopDownVisit();
 			if (key > h->key) {
 				if (deg2Node && isNil(h->right)) {
 					deg2Node->key = h->key;
@@ -197,8 +201,10 @@ private:
 
 	void remove_bottom_up_pass(Node* x) {
 
-		while (x != nilSentinel->left && x->color == BLACK)
+		while (x != nilSentinel->left && x->color == BLACK) {
+			this->incBottomUpVisit();
 			x = applyParitySeekingRules(x);
+		}
 		x->color = BLACK; // Parity-seeking Rule (a)
 	}
 

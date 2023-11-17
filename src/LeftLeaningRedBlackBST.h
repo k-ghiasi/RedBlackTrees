@@ -81,6 +81,7 @@ private:
     inline Value get(Node *x, Key key) {
 		//if (x == nilSentinel)
 		//	throw "Not found";
+		this->incTopDownVisit();
         if (key== x->key) return x->value;
         if (key < x->key) return get(x->left, key);
         else return get(x->right, key);
@@ -91,7 +92,6 @@ public:
         if (root == nilSentinel) return nilSentinel;
         else return min(root);
     }
-
 
 private:
     inline Value min(Node *x) {
@@ -121,7 +121,8 @@ private:
     inline Node *put(Node *h, Key key, Value value) {
         if (h == nilSentinel)
             return new Node(key, value, nilSentinel);
-
+		
+		this->incTopDownVisit();
         if (key == h->key)
             h->value = value;
         else if (key < h->key)
@@ -130,6 +131,7 @@ private:
             h->right = put(h->right, key, value);
 
 
+		this->incBottomUpVisit();
         if (isRed(h->right))
             h = rotateLeft(h);
 
@@ -152,6 +154,7 @@ public:
 
 private:
     Node *remove(Node *h, Key key) {
+		this->incTopDownVisit();
         if (h != nilSentinel) {
             if (key < h->key) {
                 if (!isRed(h->left) && h->left != nilSentinel && !isRed(h->left->left))
@@ -173,8 +176,11 @@ private:
                 } else h->right = remove(h->right, key);
             }
 
+			this->incBottomUpVisit();
             return fixUp(h);
         }
+
+		this->incBottomUpVisit();
         return nilSentinel;
     }
 
@@ -187,6 +193,7 @@ public:
 
 private:
     Node *deleteMin(Node *h) {
+		this->incTopDownVisit();
         if (h->left == nilSentinel) {
             delete h;
             return nilSentinel;
@@ -196,6 +203,7 @@ private:
 
         h->left = deleteMin(h->left);
 
+		this->incBottomUpVisit();
         return fixUp(h);
     }
 
@@ -209,6 +217,7 @@ public:
 
 private:
     Node deleteMax(Node *h) {
+		this->incTopDownVisit()
         if (isRed(h->left))
             h = rotateRight(h);
 
@@ -222,6 +231,7 @@ private:
 
         h->right = deleteMax(h->right);
 
+		this->incBottomUpVisit();
         return fixUp(h);
     }
 
