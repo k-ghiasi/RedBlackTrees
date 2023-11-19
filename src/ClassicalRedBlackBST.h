@@ -86,6 +86,7 @@ private:
 	inline Value get(Node* x, Key key) {
 		//if (x == nilSentinel)
 		//	throw "Not found";
+		this->incTopDownVisit();
 		if (key == x->key) return x->value;
 		if (key < x->key) return get(x->left, key);
 		else return get(x->right, key);
@@ -95,6 +96,7 @@ private:
 		Node** p = &nilSentinel->left;	//root is nilSentinel->left
 		Node* h = nilSentinel;
 		while (1){
+			this->incTopDownVisit();
 			if (*p == nilSentinel) {
 				*p = new Node(key, value, h, nilSentinel);
 				break;
@@ -122,6 +124,7 @@ private:
 		Node*  y;   // sibling of parent of z
 
 		while (z->parent->color == RED) {
+			this->incBottomUpVisit();
 			if (z->parent == z->parent->parent->left){
 				y = z->parent->parent->right;
 				if (y->color == RED){
@@ -165,6 +168,7 @@ private:
 		Node*  h = nilSentinel->left;
 
 		while (1) {
+			this->incTopDownVisit();
 			if (key > h->key) {
 				if (deg2Node && isNil(h->right)) {
 					deg2Node->key = h->key;
@@ -202,6 +206,7 @@ private:
 	void remove_bottom_up_pass(Node* x) {
 
 		while (x != nilSentinel->left && x->color == BLACK) {
+			this->incBottomUpVisit();
 			if (x == x->parent->left)
 				x = leftRemoveFixup(x);
 			else 

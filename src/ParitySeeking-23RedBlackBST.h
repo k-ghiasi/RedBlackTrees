@@ -56,8 +56,6 @@ public:
 		Node* h;
 		h = put_top_down_pass(key, value);
 		put_bottom_up_pass(h); // fixup pass
-		Node*	root = nilSentinel->left;
-		root->color = BLACK;
 	}
 
 	virtual void remove(Key key) {
@@ -86,6 +84,7 @@ private:
 	inline Value get(Node* x, Key key) {
 		//if (x == nilSentinel)
 		//	throw "Not found";
+		this->incTopDownVisit();
 		if (key == x->key) return x->value;
 		if (key < x->key) return get(x->left, key);
 		else return get(x->right, key);
@@ -95,6 +94,7 @@ private:
 		Node** p = &nilSentinel->left;	//root is nilSentinel->left
 		Node* h = nilSentinel;
 		while (1) {
+			this->incTopDownVisit();
 			if (*p == nilSentinel) {
 				*p = new Node(key, value, h, nilSentinel);
 				break;
@@ -120,31 +120,37 @@ private:
 
 	void put_bottom_up_pass(Node* x) {
 		Node* p;
-		while (1) {	// x->color is certainly RED
+		bool b = true;
+		while (b) {								// x->color is certainly RED
+			this->incBottomUpVisit();
 			p = x->parent;
-			if (p->left->color == RED && p->right->color == RED) {  // Rule (c)
-				colorFlip(p);
-				x = p;
-			}
-			else if (p->color == RED) {
+			b = false;
+			if (p->color == RED) {
 				if (p == p->parent->left) { 
-					if (x == p->right) { 	// Rule (a)
+					if (x == p->right) { 				// Rule (a)
 						x = p;
 						p = rotateLeft(p);
 					}
-					rotateRight(p->parent);	// Rule (b)
+					p = rotateRight(p->parent);			// Rule (b)
 				}
 				else {						
-					if (x == p->left) {		// Rule (a)
+					if (x == p->left) {					// Rule (a)
 						x = p;
 						p = rotateRight(p);	
 					}
-					rotateLeft(p->parent);	// Rule (b)
+					p = rotateLeft(p->parent);			// Rule (b)
 				}
+				b = true;
 			}
-			else
-				break;
+			if (p->left->color == RED && p->right->color == RED) {  // Rule (c)
+				colorFlip(p);
+				x = p;
+				b = true;
+			}
 		}
+		if (x == nilSentinel->left)				// x->color is certainly RED
+			x->color = BLACK;							// Rule (d)
+
 	}
 
 private:
@@ -154,6 +160,7 @@ private:
 		Node*  h = nilSentinel->left;
 
 		while (1) {
+			this->incTopDownVisit();
 			if (key > h->key) {
 				if (deg2Node && isNil(h->right)) {
 					deg2Node->key = h->key;
@@ -191,21 +198,22 @@ private:
 	void remove_bottom_up_pass(Node* x) {
 
 		while (x != nilSentinel->left && x->color == BLACK)
+		{
+			this->incBottomUpVisit();
 			x = applyParitySeekingRules(x);
+		}
 		x->color = BLACK; // Parity-seeking Rule (a)
 	}
 
 	Node* applyParitySeekingRules(Node* x) {
 		Node* p = x->parent;
 		Node* y = x == p->left? p->right:p->left;
-		if (y->color == RED) 	
-			// Parity-seeking Rule (c): Rotate to have a black sibling
+		if (y->color == RED)  // Parity-seeking Rule (c): Rotate to have a black sibling
 			if (x == p->left)
 				rotateLeft(p);
 			else 
 				rotateRight(p);
-		else { 					
-			// Parity-seeking Rule (b): Make the sibling red
+		else {                // Parity-seeking Rule (b): Make the sibling red
 			y->color = RED;
 			x = p;
 			x = fixUp(x, y);
